@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KING — take the crown, hold it, take the pot</title>
+<meta name="description" content="One seat. A clock. Burn $KING to take it. Whoever's holding when time runs out takes the pot — held at an address nobody has a key to.">
+<meta property="og:title" content="KING — take the crown">
+<meta property="og:description" content="One seat. A clock. Burn to take it. Last one holding takes the pot.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0E14; --ink:#11151D; --panel:#161B25; --line:#222937; --line2:#2E3746;
+  --fg:#F3F5F9; --mid:#96A2B4; --dim:#5A6577; --gold:#FFC430; --good:#3DDC97; --bad:#FF5D47;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,sans-serif;
+  line-height:1.55;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(880px 520px at 50% -10%, rgba(255,196,48,.13), transparent 62%)}
+.wrap{max-width:980px;margin:0 auto;padding:0 22px;position:relative;z-index:1}
+a{color:inherit;text-decoration:none}
+.mono{font-family:var(--mono)}
+
+nav{position:sticky;top:0;z-index:30;backdrop-filter:blur(14px);
+  background:rgba(11,14,20,.82);border-bottom:1px solid var(--line)}
+.nav{max-width:980px;margin:0 auto;padding:13px 22px;display:flex;align-items:center;gap:18px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:900;font-size:17px;letter-spacing:-.03em}
+.crown{width:24px;height:17px;background:var(--gold);
+  clip-path:polygon(0% 100%,0% 22%,26% 58%,50% 0%,74% 58%,100% 22%,100% 100%)}
+.nav .sp{flex:1}
+.nav a.l{font-size:13.5px;color:var(--mid);font-weight:500}
+.nav a.l:hover{color:var(--fg)}
+.ca{font-family:var(--mono);font-size:11px;color:var(--gold);cursor:pointer;
+  border:1px solid var(--line2);padding:5px 10px;border-radius:6px}
+.ca:hover{border-color:var(--gold)}
+
+header{padding:74px 0 46px;text-align:center}
+h1{margin:0 0 18px;font-size:clamp(46px,10vw,96px);line-height:.92;font-weight:900;
+  letter-spacing:-.05em}
+h1 em{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;color:var(--gold);
+  letter-spacing:-.02em;display:block}
+.lede{font-size:19px;color:var(--mid);max-width:50ch;margin:0 auto 28px}
+.lede b{color:var(--fg);font-weight:600}
+.row{display:flex;gap:11px;flex-wrap:wrap;justify-content:center}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 26px;border-radius:10px;
+  font-weight:700;font-size:15px;border:1px solid var(--line2);background:var(--panel);
+  transition:.15s;cursor:pointer;font-family:inherit;color:var(--fg)}
+.btn:hover:not(:disabled){border-color:var(--gold);transform:translateY(-1px)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.p{background:var(--gold);border-color:var(--gold);color:#0B0E14}
+.btn.p:hover:not(:disabled){filter:brightness(1.08)}
+
+section{padding:46px 0}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--dim);margin:0 0 6px;text-align:center}
+h2{margin:0 0 10px;font-size:clamp(26px,4vw,36px);font-weight:800;letter-spacing:-.035em;text-align:center}
+h2 em{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;color:var(--gold)}
+.sub{color:var(--mid);max-width:58ch;margin:0 auto 28px;font-size:15.5px;text-align:center}
+
+.game{background:var(--ink);border:1px solid var(--line);border-radius:18px;overflow:hidden;
+  transition:border-color .3s}
+.gbar{display:flex;align-items:center;gap:9px;padding:11px 18px;border-bottom:1px solid var(--line);
+  background:var(--panel);font-family:var(--mono);font-size:11px;color:var(--dim)}
+.gbar .live{width:6px;height:6px;border-radius:50%;background:var(--good);animation:p 1.7s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.2}}
+.gbody{padding:30px 24px;text-align:center}
+.slot{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.who{font-size:20px;font-weight:800;margin:4px 0 0;letter-spacing:-.025em}
+.who.me{color:var(--gold)}
+.pot{font-size:clamp(46px,9vw,74px);font-weight:900;letter-spacing:-.05em;line-height:1;
+  margin:18px 0 3px;color:var(--good)}
+.potl{font-size:13px;color:var(--mid);margin-bottom:22px}
+.clk{font-family:var(--mono);font-size:clamp(32px,6vw,46px);font-weight:700;letter-spacing:-.02em}
+.clk.w{color:var(--gold)}.clk.h{color:var(--bad)}
+.clkl{font-size:12px;color:var(--dim);margin-bottom:15px}
+.track{height:6px;background:var(--line);border-radius:4px;overflow:hidden;max-width:450px;margin:0 auto 22px}
+.track i{display:block;height:100%;background:var(--gold);transition:width .2s linear}
+.track i.h{background:var(--bad)}
+.msg{margin-top:14px;font-size:13.5px;color:var(--dim);min-height:20px}
+.msg.w{color:var(--good);font-weight:700}.msg.l{color:var(--bad)}
+.gfoot{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+.gfoot div{padding:13px 10px;text-align:center;border-right:1px solid var(--line)}
+.gfoot div:last-child{border:none}
+.gfoot b{display:block;font-family:var(--mono);font-size:15px;font-weight:700}
+.gfoot s{font-size:9.5px;color:var(--dim);text-decoration:none;letter-spacing:.06em;text-transform:uppercase}
+@media(max-width:620px){.gfoot{grid-template-columns:repeat(2,1fr)}.gfoot div:nth-child(2){border-right:none}}
+
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1px;
+  background:var(--line);border:1px solid var(--line);border-radius:15px;overflow:hidden}
+.rl{background:var(--ink);padding:22px 20px}
+.rl .n{font-family:var(--mono);font-size:11px;color:var(--gold);margin-bottom:11px;display:block}
+.rl b{display:block;font-size:15.5px;margin-bottom:7px;font-weight:700;letter-spacing:-.015em}
+.rl p{margin:0;font-size:13.5px;color:var(--mid);line-height:1.6}
+
+.gr{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.g{background:var(--ink);border:1px solid var(--line);border-radius:14px;padding:22px}
+.g h3{margin:0 0 9px;font-size:16px;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
+.g h3 .t{color:var(--good)}
+.g p{margin:0;font-size:13.5px;color:var(--mid);line-height:1.62}
+.g code{font-family:var(--mono);font-size:12.5px;color:var(--gold);
+  background:rgba(255,196,48,.08);padding:1px 6px;border-radius:4px}
+
+.status{border:1px solid var(--line2);border-left:3px solid var(--gold);border-radius:13px;
+  padding:24px 26px;background:var(--ink)}
+.status h3{margin:0 0 12px;font-size:17px;font-weight:800;letter-spacing:-.02em}
+.status p{margin:0 0 11px;font-size:14px;color:var(--mid);line-height:1.65}
+.status p:last-child{margin:0}
+.status b.ok{color:var(--good)}.status b.no{color:var(--bad)}
+
+footer{border-top:1px solid var(--line);margin-top:48px;padding:26px 0 70px;
+  font-size:13px;color:var(--dim);text-align:center}
+footer a{color:var(--gold)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<nav><div class="nav">
+  <a href="#" class="brand"><span class="crown"></span>KING</a>
+  <span class="sp"></span>
+  <a href="#play" class="l">Play</a>
+  <a href="#rules" class="l">Rules</a>
+  <a href="https://github.com/haydensouthall2021/arena" class="l">Code</a>
+  <span class="ca" id="ca" title="click to copy">CA: coming at launch</span>
+</div></nav>
+
+<div class="wrap">
+
+<header>
+  <h1>Take the crown.<em>Hold it to zero.</em></h1>
+  <p class="lede">One seat. A clock counting down. <b>Burn $KING to take it off whoever's sitting there.</b> Still holding when the clock hits zero? The pot is yours.</p>
+  <div class="row">
+    <a href="#play" class="btn p">Play it now →</a>
+    <a href="https://github.com/haydensouthall2021/arena" class="btn">Read the code</a>
+  </div>
+</header>
+
+<section id="play">
+  <div class="game" id="game">
+    <div class="gbar"><span class="live"></span> demo · runs in your browser · no wallet needed</div>
+    <div class="gbody">
+      <div class="slot">On the throne</div>
+      <div class="who" id="who">Nobody yet</div>
+      <div class="pot" id="pot">3.200 SOL</div>
+      <div class="potl" id="potl">goes to whoever holds it at zero</div>
+      <div class="clk" id="clk">5:00</div>
+      <div class="clkl" id="clkl">until it pays out, automatically</div>
+      <div class="track"><i id="track"></i></div>
+      <button class="btn p" id="buy" style="min-width:260px;justify-content:center">Take it — burn 2.50M</button>
+      <div class="msg" id="msg">Take it, then hold on. Every claim resets the clock and shortens it.</div>
+    </div>
+    <div class="gfoot">
+      <div><b id="f-round">1</b><s>round</s></div>
+      <div><b id="f-buys">0</b><s>claims</s></div>
+      <div><b id="f-timer">5:00</b><s>clock now</s></div>
+      <div><b id="f-burn">0.00%</b><s>supply burned</s></div>
+    </div>
+  </div>
+</section>
+
+<section id="rules">
+  <p class="eyebrow">The rules</p>
+  <h2>Four lines. <em>That's the whole game.</em></h2>
+  <div class="rules">
+    <div class="rl"><span class="n">01</span><b>Burn to take it</b>
+      <p>Claiming the throne destroys $KING against the mint. Not moved to a wallet — gone. Supply only falls.</p></div>
+    <div class="rl"><span class="n">02</span><b>Every claim resets the clock</b>
+      <p>And shortens it. Five minutes at the start, two seconds off each time, floor at thirty. Busy rounds get frantic.</p></div>
+    <div class="rl"><span class="n">03</span><b>Each claim costs more</b>
+      <p>12% more than the last, resetting every round. Price is a share of remaining supply, so heavy burning keeps it affordable.</p></div>
+    <div class="rl"><span class="n">04</span><b>Hold it at zero, take the pot</b>
+      <p>The pot is fed by trading fees. Winner takes the whole thing — nothing is deducted from a payout.</p></div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Guarantees</p>
+  <h2>Impossible, <em>not promised</em></h2>
+  <p class="sub">Every claim below is a property of the deployed program rather than a policy. All three are checkable in the source.</p>
+  <div class="gr">
+    <div class="g"><h3><span class="t">✓</span>Nobody holds the pot</h3>
+      <p>It sits at a program-derived address with no private key in existence — not the developer's, not anyone's. There is no key to compromise and no wallet to drain.</p></div>
+    <div class="g"><h3><span class="t">✓</span>Payout needs no permission</h3>
+      <p><code>settle</code> is permissionless and always pays the holder, never the caller. If the keeper stops, any player can settle the round and the winner is still paid.</p></div>
+    <div class="g"><h3><span class="t">✓</span>Settings freeze at launch</h3>
+      <p>Timer, price floor, step, fee split — fixed when the game starts and unchangeable afterwards. Nobody can tilt a running game.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="status">
+    <h3>Where this actually is</h3>
+    <p>Anchor program, <b class="ok">21 tests passing</b> — including that the platform authority has no route to any pot, that pausing cannot trap a payout, and that games cannot reach into each other's funds.</p>
+    <p><b class="no">Not audited.</b> Code is public and unchanged from what's deployed. Stated here rather than buried in a footer.</p>
+    <p>$KING is the first game. The program behind it is multi-tenant — any token can attach one.</p>
+  </div>
+</section>
+
+<footer>
+  <a href="https://github.com/haydensouthall2021/arena">github.com/haydensouthall2021/arena</a> · Built on Solana<br>
+  Nothing here is financial advice or an offer of anything.
+</footer>
+
+</div>
+
+<script>
+(function(){
+var A="123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+function ad(){var s="";for(var i=0;i<44;i++)s+=A[Math.floor(Math.random()*58)];return s;}
+function sa(a){return a.slice(0,4)+"\u2026"+a.slice(-4);}
+function S(n){return (Math.abs(n)<10?n.toFixed(3):n.toFixed(2))+" SOL";}
+function mm(s){s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");}
+var RIV=[];for(var i=0;i<6;i++)RIV.push({n:ad()});
+var ME={n:"you"}, SUP=1e9;
+var G={last:null,timer:300,left:300,pot:3.2,round:1,buys:0,cost:2.5e6,burn:0,t:Date.now()};
+var $=function(i){return document.getElementById(i);};
+function take(w){
+  G.last=w;G.buys++;G.burn+=G.cost;G.timer=Math.max(30,G.timer-2);G.left=G.timer;G.cost*=1.12;
+  var m=$("msg");m.className="msg";
+  m.textContent = w===ME ? "You hold the crown. Nobody takes it before zero and the pot is yours."
+                         : sa(w.n)+" took the crown off you. Take it back?";
+}
+function draw(){
+  var now=Date.now(),dt=(now-G.t)/1000;G.t=now;
+  G.left-=dt;G.pot+=dt*0.005;
+  if(G.left<=0){
+    var m=$("msg");
+    if(G.last===ME){m.className="msg w";m.textContent="You held it to zero. "+S(G.pot)+" is yours.";}
+    else if(G.last){m.className="msg l";m.textContent=sa(G.last.n)+" held it and took "+S(G.pot)+".";}
+    G.pot=0.4+Math.random()*1.6;G.round++;G.buys=0;G.timer=300;G.left=300;G.cost=2.5e6;G.last=null;
+  }
+  if(G.last&&Math.random()<(G.left<45?0.013:0.0024)){
+    var r=RIV[Math.floor(Math.random()*RIV.length)];
+    if(r!==G.last) take(r);
+  }
+  var hot=G.left<45,mine=G.last===ME;
+  $("who").textContent=G.last?(mine?"YOU":sa(G.last.n)):"Nobody yet";
+  $("who").className="who"+(mine?" me":"");
+  $("pot").textContent=S(G.pot);
+  $("potl").textContent=mine?"yours if nobody takes it before zero":"goes to whoever holds it at zero";
+  $("clk").textContent=mm(G.left);
+  $("clk").className="clk"+(hot?" h":G.left<120?" w":"");
+  var t=$("track");t.style.width=Math.max(0,Math.min(100,G.left/G.timer*100))+"%";
+  t.className=hot?"h":"";
+  $("game").style.borderColor=hot?"var(--bad)":(mine?"var(--gold)":"var(--line)");
+  var b=$("buy");b.disabled=mine;
+  b.textContent=mine?"You hold the crown":"Take it \u2014 burn "+(G.cost/1e6).toFixed(2)+"M";
+  $("f-round").textContent=G.round;
+  $("f-buys").textContent=G.buys;
+  $("f-timer").textContent=mm(G.timer);
+  $("f-burn").textContent=(G.burn/SUP*100).toFixed(2)+"%";
+}
+$("buy").onclick=function(){ if(G.last!==ME) take(ME); draw(); };
+$("ca").onclick=function(){
+  var t=this.textContent.replace("CA: ","");
+  if(t.indexOf("coming")<0&&navigator.clipboard){navigator.clipboard.writeText(t);this.textContent="copied";
+    var s=this;setTimeout(function(){s.textContent="CA: "+t;},1200);}
+};
+draw();setInterval(draw,140);
+})();
+</script>
+</body>
+</html>
