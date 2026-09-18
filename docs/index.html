@@ -127,6 +127,7 @@ footer a{color:var(--gold)}
   <a href="#rules" class="l">Rules</a>
   <a href="https://github.com/haydensouthall2021/arena" class="l">Code</a>
   <span class="ca" id="ca" title="click to copy">CA: coming at launch</span>
+  <button class="btn" id="wallet" style="padding:7px 14px;font-size:12.5px">Connect wallet</button>
 </div></nav>
 
 <div class="wrap">
@@ -142,7 +143,7 @@ footer a{color:var(--gold)}
 
 <section id="play">
   <div class="game" id="game">
-    <div class="gbar"><span class="live"></span> demo · runs in your browser · no wallet needed</div>
+    <div class="gbar"><span class="live"></span> <span id="mode">demo · runs in your browser · no wallet needed</span></div>
     <div class="gbody">
       <div class="slot">On the throne</div>
       <div class="who" id="who">Nobody yet</div>
@@ -151,7 +152,7 @@ footer a{color:var(--gold)}
       <div class="clk" id="clk">5:00</div>
       <div class="clkl" id="clkl">until it pays out, automatically</div>
       <div class="track"><i id="track"></i></div>
-      <button class="btn p" id="buy" style="min-width:260px;justify-content:center">Take it — burn 2.50M</button>
+      <div class="row" style="justify-content:center"><button class="btn p" id="buy" style="min-width:260px;justify-content:center">Take it — burn 2.50M</button><button class="btn" id="settle" style="display:none">Settle the round</button></div>
       <div class="msg" id="msg">Take it, then hold on. Every claim resets the clock and shortens it.</div>
     </div>
     <div class="gfoot">
@@ -208,8 +209,182 @@ footer a{color:var(--gold)}
 
 </div>
 
+
+<script type="module">
+// ── Live mode. Reads the Arena program on mainnet. Falls back to the browser
+// demo below if no game is attached yet.
+import {
+  Connection, PublicKey, SystemProgram, Transaction, TransactionInstruction, LAMPORTS_PER_SOL,
+} from "https://esm.sh/@solana/web3.js@1.95.3";
+import {
+  getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID,
+  createAssociatedTokenAccountInstruction,
+} from "https://esm.sh/@solana/spl-token@0.4.9?deps=@solana/web3.js@1.95.3";
+import { sha256 } from "https://esm.sh/@noble/hashes@1.4.0/sha256";
+
+const CFG = await fetch("./config.json").then(r => r.json()).catch(() => null);
+if (CFG && CFG.mint) {
+  window.__LIVE__ = true;
+  const conn = new Connection(CFG.rpc, "confirmed");
+  const PROGRAM = new PublicKey(CFG.programId);
+  const MINT = new PublicKey(CFG.mint);
+  const enc = s => new TextEncoder().encode(s);
+  const gamePda  = PublicKey.findProgramAddressSync([enc("game"), MINT.toBuffer()], PROGRAM)[0];
+  const vaultPda = PublicKey.findProgramAddressSync([enc("vault"), MINT.toBuffer()], PROGRAM)[0];
+  const disc = n => sha256(enc("global:" + n)).slice(0, 8);
+  const u64le = v => { const b=new Uint8Array(8); new DataView(b.buffer).setBigUint64(0, BigInt(v), true); return b; };
+  const cat = (...xs) => { const o=new Uint8Array(xs.reduce((a,x)=>a+x.length,0)); let i=0;
+    for (const x of xs){o.set(x,i);i+=x.length;} return o; };
+
+  function decode(buf){
+    const d=new DataView(buf.buffer,buf.byteOffset,buf.byteLength); let o=8;
+    const key=()=>{const k=new PublicKey(buf.slice(o,o+32)); o+=32; return k;};
+    const u64=()=>{const v=d.getBigUint64(o,true); o+=8; return v;};
+    const i64=()=>{const v=Number(d.getBigInt64(o,true)); o+=8; return v;};
+    const u16=()=>{const v=d.getUint16(o,true); o+=2; return v;};
+    const u32=()=>{const v=d.getUint32(o,true); o+=4; return v;};
+    return { mint:key(), creator:key(), creatorTreasury:key(), lastBuyer:key(),
+      round:Number(u64()), startSeconds:i64(), shrinkSeconds:i64(), minSeconds:i64(),
+      timerSeconds:i64(), deadline:i64(), costTokens:u64(),
+      floorBps:u16(), stepBps:u16(), creatorBps:u16(), platformBps:u16(),
+      buysThisRound:u32(), totalBurned:u64(), totalPaidOut:u64(), roundsSettled:Number(u64()) };
+  }
+
+  let wallet=null,S=null,pot=0,myTok=0n,dec=6,supply=0n,TOKPROG=TOKEN_PROGRAM_ID;
+  const $=id=>document.getElementById(id);
+  const sa=a=>a.slice(0,4)+"\u2026"+a.slice(-4);
+  const sol=n=>(Number(n)/LAMPORTS_PER_SOL).toFixed(3)+" SOL";
+  const tk=n=>{const v=Number(n)/10**dec;
+    return v>=1e6?(v/1e6).toFixed(2)+"M":v>=1e3?(v/1e3).toFixed(0)+"k":v.toFixed(0);};
+  const mm=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");};
+  const msg=(t,c="")=>{$("msg").textContent=t; $("msg").className="msg "+c;};
+  const prov=()=>window.solana?.isPhantom?window.solana
+    :window.solflare?.isSolflare?window.solflare:window.backpack||null;
+
+  $("wallet").onclick=async()=>{
+    const p=prov();
+    if(!p){msg("No Solana wallet found. Install Phantom.","l");return;}
+    if(wallet){try{await p.disconnect();}catch{} wallet=null;$("wallet").textContent="Connect wallet";render();return;}
+    try{const r=await p.connect(); wallet=r.publicKey??p.publicKey;
+      $("wallet").textContent=sa(wallet.toBase58()); await refresh();}
+    catch{msg("Connection rejected.","l");}
+  };
+
+  async function send(ixs,label){
+    const p=prov();
+    if(!p||!wallet){msg("Connect a wallet first.","l");return;}
+    try{
+      msg(label+"\u2026");
+      const tx=new Transaction().add(...ixs);
+      tx.feePayer=wallet;
+      tx.recentBlockhash=(await conn.getLatestBlockhash()).blockhash;
+      let sig;
+      if(p.signAndSendTransaction){const res=await p.signAndSendTransaction(tx); sig=res.signature??res;}
+      else {const sg=await p.signTransaction(tx); sig=await conn.sendRawTransaction(sg.serialize());}
+      msg("Confirming\u2026");
+      await conn.confirmTransaction(sig,"confirmed");
+      msg(label+" confirmed.","w");
+      await refresh();
+    }catch(e){msg(String(e?.message??e).slice(0,150),"l");}
+  }
+
+  async function take(){
+   try{
+    const dyn = supply>0n ? (supply*BigInt(S.floorBps))/10000n : 0n;
+    const price = S.costTokens>dyn ? S.costTokens : dyn;
+    const ata=await getAssociatedTokenAddress(MINT,wallet,false,TOKPROG);
+    const ixs=[];
+    if(!(await conn.getAccountInfo(ata)))
+      ixs.push(createAssociatedTokenAccountInstruction(wallet,ata,wallet,MINT,TOKPROG));
+    ixs.push(new TransactionInstruction({programId:PROGRAM,keys:[
+      {pubkey:gamePda,isSigner:false,isWritable:true},
+      {pubkey:vaultPda,isSigner:false,isWritable:false},
+      {pubkey:MINT,isSigner:false,isWritable:true},
+      {pubkey:ata,isSigner:false,isWritable:true},
+      {pubkey:wallet,isSigner:true,isWritable:true},
+      {pubkey:TOKPROG,isSigner:false,isWritable:false},
+    ],data:cat(disc("buy"),u64le(price*12n/10n))}));
+    await send(ixs,"Taking the crown");
+   }catch(e){msg("failed: "+String((e&&e.message)||e).slice(0,150),"l");}
+  }
+
+  async function settle(){
+    const empty=S.lastBuyer.equals(PublicKey.default);
+    await send([new TransactionInstruction({programId:PROGRAM,keys:[
+      {pubkey:gamePda,isSigner:false,isWritable:true},
+      {pubkey:vaultPda,isSigner:false,isWritable:true},
+      {pubkey:empty?wallet:S.lastBuyer,isSigner:false,isWritable:true},
+      {pubkey:wallet,isSigner:true,isWritable:false},
+      {pubkey:SystemProgram.programId,isSigner:false,isWritable:false},
+    ],data:disc("settle")})],"Settling the round");
+  }
+
+  async function refresh(){
+    const info=await conn.getAccountInfo(gamePda);
+    if(!info){$("mode").textContent="game not attached yet \u2014 showing demo";return;}
+    S=decode(info.data);
+    pot=await conn.getBalance(vaultPda);
+    try{
+      const mi=await conn.getAccountInfo(MINT);
+      TOKPROG = mi && mi.owner.equals(TOKEN_2022_PROGRAM_ID)?TOKEN_2022_PROGRAM_ID:TOKEN_PROGRAM_ID;
+      const sp=await conn.getTokenSupply(MINT); supply=BigInt(sp.value.amount); dec=sp.value.decimals;
+    }catch{}
+    if(wallet){try{
+      const ata=await getAssociatedTokenAddress(MINT,wallet,false,TOKPROG);
+      myTok=BigInt((await conn.getTokenAccountBalance(ata)).value.amount);
+    }catch{myTok=0n;}}
+    render();
+  }
+
+  function render(){
+    if(!S)return;
+    const now=Math.floor(Date.now()/1000), left=S.deadline-now, over=left<=0;
+    const empty=S.lastBuyer.equals(PublicKey.default);
+    const mine=wallet&&!empty&&S.lastBuyer.equals(wallet);
+    const hot=!over&&left<45;
+    const dyn=supply>0n?(supply*BigInt(S.floorBps))/10000n:0n;
+    const price=S.costTokens>dyn?S.costTokens:dyn;
+
+    $("mode").innerHTML="LIVE on mainnet \u00b7 round "+S.round+" \u00b7 <a href='https://solscan.io/account/"+vaultPda.toBase58()+"' target='_blank' style='color:var(--gold)'>view the pot \u2197</a>";
+    $("ca").textContent="CA: "+sa(MINT.toBase58());
+    $("ca").onclick=()=>{navigator.clipboard?.writeText(MINT.toBase58());};
+    $("who").textContent=empty?"Nobody yet":(mine?"YOU":sa(S.lastBuyer.toBase58()));
+    $("who").className="who"+(mine?" me":"");
+    $("pot").textContent=sol(pot);
+    $("potl").textContent=mine?"yours if nobody takes it before zero":"goes to whoever holds it at zero";
+    $("clk").textContent=over?"TIME":mm(left);
+    $("clk").className="clk"+(over||hot?" h":left<120?" w":"");
+    $("clkl").textContent=over?"round over \u2014 anyone can settle it":"until it pays out";
+    const t=$("track"); t.style.width=Math.max(0,Math.min(100,left/S.timerSeconds*100))+"%";
+    t.className=hot||over?"h":"";
+    $("game").style.borderColor=hot||over?"var(--bad)":(mine?"var(--gold)":"var(--line)");
+
+    const b=$("buy"), st=$("settle");
+    if(over){ b.style.display="none"; st.style.display="";
+      st.textContent=empty?"Start the next round":"Pay "+sa(S.lastBuyer.toBase58())+" \u00b7 settle";
+      st.disabled=!wallet; st.onclick=settle;
+    } else { st.style.display="none"; b.style.display="";
+      b.disabled=mine||!wallet||myTok<price;
+      b.textContent=mine?"You hold the crown":!wallet?"Connect a wallet"
+        :myTok<price?"Need "+tk(price)+" $KINGCAT":"Take it \u2014 burn "+tk(price);
+      b.onclick=take;
+    }
+    $("f-round").textContent=S.round;
+    $("f-buys").textContent=S.buysThisRound;
+    $("f-timer").textContent=mm(S.timerSeconds);
+    const bp=supply>0n?Number(S.totalBurned)/(Number(supply)+Number(S.totalBurned))*100:0;
+    $("f-burn").textContent=bp.toFixed(2)+"%";
+  }
+
+  conn.onLogs(PROGRAM,()=>refresh(),"confirmed");
+  await refresh();
+  setInterval(render,250);
+  setInterval(refresh,6000);
+}
+</script>
 <script>
 (function(){
+if(window.__LIVE__)return;
 var A="123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 function ad(){var s="";for(var i=0;i<44;i++)s+=A[Math.floor(Math.random()*58)];return s;}
 function sa(a){return a.slice(0,4)+"\u2026"+a.slice(-4);}
