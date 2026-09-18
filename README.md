@@ -36,6 +36,48 @@ private key in existence — not the developer's, not anyone's.
 
 ---
 
+## How to play
+
+1. **Get $KING.** Buy it wherever it trades. You need enough for one claim —
+   at launch that is 2,500,000 tokens, which is 0.25% of supply.
+2. **Open the site** and connect a Solana wallet (Phantom, Solflare, Backpack).
+3. **Press Take it.** Your wallet asks you to sign. The transaction burns your
+   tokens and puts you on the seat.
+4. **Watch the clock.** If it reaches zero with you still holding, the pot is
+   yours — paid automatically, no action needed.
+5. **If someone takes it off you**, the clock resets and you can take it back.
+   It will cost 12% more than their claim did.
+
+There is no deposit, no staking, and nothing to withdraw. You spend tokens, and
+either the pot arrives or it does not.
+
+---
+
+## A worked example
+
+Say the pot is at **4.0 SOL** and supply is still a billion.
+
+| | |
+|---|---|
+| A claim costs | 2,500,000 $KING (0.25% of supply) |
+| You claim | those tokens are burned, supply → 997,500,000 |
+| Clock | resets to 5:00, then drops to 4:58 |
+| Next person pays | 2,800,000 (12% more) |
+
+Nobody claims for five minutes → **you receive 4.0 SOL.**
+
+Someone claims at 4:10 → you get nothing, they are on the seat, the clock resets
+to 4:56, and the next claim costs 3,136,000.
+
+After a hundred claims, roughly a quarter of the supply is gone — and because
+the price tracks *remaining* supply, a claim then costs around 1.9M rather than
+2.5M. The game gets cheaper to play as the token gets scarcer.
+
+**What you are actually deciding:** whether the pot is worth more than the
+tokens a claim costs you, and whether you think the room has gone quiet.
+
+---
+
 ## Where the money is
 
 | | |
