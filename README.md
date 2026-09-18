@@ -26,8 +26,8 @@ private key in existence — not the developer's, not anyone's.
 3. **Each claim costs more than the last.** Five percent more, resetting at
    the start of every round.
 
-4. **The price is a share of remaining supply, not a fixed number.** At 0.25%,
-   a claim on a billion supply costs 2.5M tokens. Burn half the supply and a
+4. **The price is a share of remaining supply, not a fixed number.** At 0.10%,
+   a claim on a billion supply costs 1M tokens. Burn half the supply and a
    claim costs half as many. The game stays affordable no matter how much has
    been destroyed, and a large holder cannot price everyone else out.
 
@@ -59,19 +59,19 @@ Say the pot is at **4.0 SOL** and supply is still a billion.
 
 | | |
 |---|---|
-| A claim costs | 2,500,000 $KINGCAT (0.25% of supply) |
-| You claim | those tokens are burned, supply → 997,500,000 |
+| A claim costs | 1,000,000 $KINGCAT (0.10% of supply) |
+| You claim | those tokens are burned, supply → 999,000,000 |
 | Clock | resets to 5:00, then drops to 4:58 |
-| Next person pays | 2,800,000 (12% more) |
+| Next person pays | 1,050,000 (5% more) |
 
 Nobody claims for five minutes → **you receive 4.0 SOL.**
 
 Someone claims at 4:10 → you get nothing, they are on the seat, the clock resets
-to 4:56, and the next claim costs 3,136,000.
+to 4:56, and the next claim costs 1,102,500.
 
-After a hundred claims, roughly a quarter of the supply is gone — and because
-the price tracks *remaining* supply, a claim then costs around 1.9M rather than
-2.5M. The game gets cheaper to play as the token gets scarcer.
+After a hundred claims, roughly around a tenth of the supply is gone — and because
+the price tracks *remaining* supply, a claim then costs around 0.9M rather than
+1.0M. The game gets cheaper to play as the token gets scarcer.
 
 **What you are actually deciding:** whether the pot is worth more than the
 tokens a claim costs you, and whether you think the room has gone quiet.
