@@ -261,6 +261,7 @@ if (CFG && CFG.mint) {
   const prov=()=>window.solana?.isPhantom?window.solana
     :window.solflare?.isSolflare?window.solflare:window.backpack||null;
 
+  $("wallet").dataset.live="1";
   $("wallet").onclick=async()=>{
     const p=prov();
     if(!p){msg("No Solana wallet found. Install Phantom.","l");return;}
@@ -424,13 +425,33 @@ function draw(){
   t.className=hot?"h":"";
   $("game").style.borderColor=hot?"var(--bad)":(mine?"var(--gold)":"var(--line)");
   var b=$("buy");b.disabled=mine;
-  b.textContent=mine?"You hold the crown":"Take it \u2014 burn "+(G.cost/1e6).toFixed(2)+"M";
+  b.textContent=mine?"You hold the crown":"Try it \u2014 burn "+(G.cost/1e6).toFixed(2)+"M (demo)";
   $("f-round").textContent=G.round;
   $("f-buys").textContent=G.buys;
   $("f-timer").textContent=mm(G.timer);
   $("f-burn").textContent=(G.burn/SUP*100).toFixed(2)+"%";
 }
 $("buy").onclick=function(){ if(G.last!==ME) take(ME); draw(); };
+
+// The live block below only runs once a game is attached. Until then the wallet
+// button would be dead, which looks broken — so give it something honest to do.
+(function(){
+  var wb=document.getElementById("wallet");
+  if(!wb||wb.dataset.live==="1")return;
+  wb.onclick=async function(){
+    var p=window.solana&&window.solana.isPhantom?window.solana
+        :window.solflare&&window.solflare.isSolflare?window.solflare:window.backpack;
+    var m=document.getElementById("msg");
+    if(!p){m.className="msg l";m.textContent="No Solana wallet found. Install Phantom to play when it goes live.";return;}
+    try{
+      var r=await p.connect();
+      var k=(r&&r.publicKey?r.publicKey:p.publicKey).toString();
+      wb.textContent=k.slice(0,4)+"\u2026"+k.slice(-4);
+      m.className="msg";
+      m.textContent="Wallet connected. The game is not live yet \u2014 this is a demo. Nothing below spends anything.";
+    }catch(e){}
+  };
+})();
 $("ca").onclick=function(){
   var t=this.textContent.replace("CA: ","");
   if(t.indexOf("coming")<0&&navigator.clipboard){navigator.clipboard.writeText(t);this.textContent="copied";
