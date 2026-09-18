@@ -23,7 +23,7 @@ private key in existence — not the developer's, not anyone's.
    minutes. Each claim knocks two seconds off, with a floor of thirty seconds.
    A quiet round is slow; a busy one becomes frantic.
 
-3. **Each claim costs more than the last.** Twelve percent more, resetting at
+3. **Each claim costs more than the last.** Five percent more, resetting at
    the start of every round.
 
 4. **The price is a share of remaining supply, not a fixed number.** At 0.25%,
@@ -39,14 +39,14 @@ private key in existence — not the developer's, not anyone's.
 ## How to play
 
 1. **Get $KINGCAT.** Buy it wherever it trades. You need enough for one claim —
-   at launch that is 2,500,000 tokens, which is 0.25% of supply.
+   at launch that is 1,000,000 tokens, which is 0.10% of supply.
 2. **Open the site** and connect a Solana wallet (Phantom, Solflare, Backpack).
 3. **Press Take it.** Your wallet asks you to sign. The transaction burns your
    tokens and puts you on the seat.
 4. **Watch the clock.** If it reaches zero with you still holding, the pot is
    yours — paid automatically, no action needed.
 5. **If someone takes it off you**, the clock resets and you can take it back.
-   It will cost 12% more than their claim did.
+   It will cost 5% more than their claim did.
 
 There is no deposit, no staking, and nothing to withdraw. You spend tokens, and
 either the pot arrives or it does not.

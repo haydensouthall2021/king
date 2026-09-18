@@ -152,7 +152,7 @@ footer a{color:var(--gold)}
       <div class="clk" id="clk">5:00</div>
       <div class="clkl" id="clkl">until it pays out, automatically</div>
       <div class="track"><i id="track"></i></div>
-      <div class="row" style="justify-content:center"><button class="btn p" id="buy" style="min-width:260px;justify-content:center">Take it — burn 2.50M</button><button class="btn" id="settle" style="display:none">Settle the round</button></div>
+      <div class="row" style="justify-content:center"><button class="btn p" id="buy" style="min-width:260px;justify-content:center">Take it — burn 1.00M</button><button class="btn" id="settle" style="display:none">Settle the round</button></div>
       <div class="msg" id="msg">Take it, then hold on. Every claim resets the clock and shortens it.</div>
     </div>
     <div class="gfoot">
@@ -173,7 +173,7 @@ footer a{color:var(--gold)}
     <div class="rl"><span class="n">02</span><b>Every claim resets the clock</b>
       <p>And shortens it. Five minutes at the start, two seconds off each time, floor at thirty. Busy rounds get frantic.</p></div>
     <div class="rl"><span class="n">03</span><b>Each claim costs more</b>
-      <p>12% more than the last, resetting every round. Price is a share of remaining supply, so heavy burning keeps it affordable.</p></div>
+      <p>5% more than the last, resetting every round. Price is a share of remaining supply, so heavy burning keeps it affordable.</p></div>
     <div class="rl"><span class="n">04</span><b>Hold it at zero, take the pot</b>
       <p>The pot is fed by trading fees. Winner takes the whole thing — nothing is deducted from a payout.</p></div>
   </div>
@@ -392,10 +392,10 @@ function S(n){return (Math.abs(n)<10?n.toFixed(3):n.toFixed(2))+" SOL";}
 function mm(s){s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");}
 var RIV=[];for(var i=0;i<6;i++)RIV.push({n:ad()});
 var ME={n:"you"}, SUP=1e9;
-var G={last:null,timer:300,left:300,pot:3.2,round:1,buys:0,cost:2.5e6,burn:0,t:Date.now()};
+var G={last:null,timer:300,left:300,pot:3.2,round:1,buys:0,cost:1.0e6,burn:0,t:Date.now()};
 var $=function(i){return document.getElementById(i);};
 function take(w){
-  G.last=w;G.buys++;G.burn+=G.cost;G.timer=Math.max(30,G.timer-2);G.left=G.timer;G.cost*=1.12;
+  G.last=w;G.buys++;G.burn+=G.cost;G.timer=Math.max(30,G.timer-2);G.left=G.timer;G.cost*=1.05;
   var m=$("msg");m.className="msg";
   m.textContent = w===ME ? "You hold the crown. Nobody takes it before zero and the pot is yours."
                          : sa(w.n)+" took the crown off you. Take it back?";
@@ -407,7 +407,7 @@ function draw(){
     var m=$("msg");
     if(G.last===ME){m.className="msg w";m.textContent="You held it to zero. "+S(G.pot)+" is yours.";}
     else if(G.last){m.className="msg l";m.textContent=sa(G.last.n)+" held it and took "+S(G.pot)+".";}
-    G.pot=0.4+Math.random()*1.6;G.round++;G.buys=0;G.timer=300;G.left=300;G.cost=2.5e6;G.last=null;
+    G.pot=0.4+Math.random()*1.6;G.round++;G.buys=0;G.timer=300;G.left=300;G.cost=1.0e6;G.last=null;
   }
   if(G.last&&Math.random()<(G.left<45?0.013:0.0024)){
     var r=RIV[Math.floor(Math.random()*RIV.length)];
